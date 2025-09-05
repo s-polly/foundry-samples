@@ -9,6 +9,7 @@
 /samples/microsoft/infrastructure-setup-terraform/00-basic/code/main.tf @azure-ai-foundry/AI-Platform-Docs
 /samples/microsoft/infrastructure-setup-terraform/00-basic/code/providers.tf @azure-ai-foundry/AI-Platform-Docs
 /samples/microsoft/infrastructure-setup-terraform/00-basic/code/variables.tf @azure-ai-foundry/AI-Platform-Docs
+/samples/microsoft/infrastructure-setup/01-connections/connection-key-vault.bicep @azure-ai-foundry/AI-Platform-Docs
 /samples/microsoft/java/mslearn-resources/quickstart/src/main/java/com/azure/ai/foundry/samples/AgentSample.java @azure-ai-foundry/AI-Platform-Docs
 /samples/microsoft/java/mslearn-resources/quickstart/src/main/java/com/azure/ai/foundry/samples/ChatCompletionSample.java @azure-ai-foundry/AI-Platform-Docs
 /samples/microsoft/java/mslearn-resources/quickstart/src/main/java/com/azure/ai/foundry/samples/FileSearchAgentSample.java @azure-ai-foundry/AI-Platform-Docs

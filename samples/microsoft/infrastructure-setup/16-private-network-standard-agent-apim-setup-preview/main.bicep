@@ -4,20 +4,32 @@ Standard Setup Network Secured Steps for main.bicep
 */
 @description('Location for all resources.')
 @allowed([
-    'australiaeast'
-    'eastus'
-    'eastus2'
-    'francecentral'
-    'japaneast'
-    'norwayeast'
-    'southindia'
-    'swedencentral'
-    'uaenorth'
-    'uksouth'
-    'westus'
-    'westus3'
-    'westus2'
-  ])
+  'westus'
+  'eastus'
+  'eastus2'
+  'japaneast'
+  'francecentral'
+  'spaincentral'
+  'uaenorth'
+  'southcentralus'
+  'italynorth'
+  'germanywestcentral'
+  'brazilsouth'
+  'southafricanorth'
+  'australiaeast'
+  'swedencentral'
+  'canadaeast'
+  'westeurope'
+  'westus3'
+  'uksouth'
+  'southindia'
+
+  //only class B and C
+  'koreacentral'
+  'polandcentral'
+  'switzerlandnorth'
+  'norwayeast'
+])
 param location string = 'eastus2'
 
 @description('Name for your AI Services resource.')
@@ -86,10 +98,26 @@ param apiManagementResourceId string = ''
 //param existingDnsZonesResourceGroup string = ''
 
 @description('Object mapping DNS zone names to their resource group, or empty string to indicate creation')
-param existingDnsZones object
+param existingDnsZones object = {
+  'privatelink.services.ai.azure.com': ''
+  'privatelink.openai.azure.com': ''
+  'privatelink.cognitiveservices.azure.com': ''               
+  'privatelink.search.windows.net': ''           
+  'privatelink.blob.core.windows.net': ''                            
+  'privatelink.documents.azure.com': ''
+  'privatelink.azure-api.net': ''                       
+}
 
 @description('Zone Names for Validation of existing Private Dns Zones')
-param dnsZoneNames array
+param dnsZoneNames array = [
+  'privatelink.services.ai.azure.com'
+  'privatelink.openai.azure.com'
+  'privatelink.cognitiveservices.azure.com'
+  'privatelink.search.windows.net'
+  'privatelink.blob.core.windows.net'
+  'privatelink.documents.azure.com'
+  'privatelink.azure-api.net'
+]
 
 
 var projectName = toLower('${firstProjectName}${uniqueSuffix}')
@@ -179,7 +207,7 @@ module validateExistingResources 'modules-network-secured/validate-existing-reso
 // This module will create new agent dependent resources
 // A Cosmos DB account, an AI Search Service, and a Storage Account are created if they do not already exist
 module aiDependencies 'modules-network-secured/standard-dependent-resources.bicep' = {
-  name: 'dependencies-${accountName}-${uniqueSuffix}-deployment'
+  name: 'dependencies-${uniqueSuffix}-deployment'
   params: {
     location: location
     azureStorageName: azureStorageName
@@ -297,7 +325,7 @@ module formatProjectWorkspaceId 'modules-network-secured/format-project-workspac
   Assigns the project SMI the storage blob data contributor role on the storage account
 */
 module storageAccountRoleAssignment 'modules-network-secured/azure-storage-account-role-assignment.bicep' = {
-  name: 'storage-${azureStorageName}-${uniqueSuffix}-deployment'
+  name: 'storage-ra-${uniqueSuffix}-deployment'
   scope: resourceGroup(azureStorageSubscriptionId, azureStorageResourceGroupName)
   params: {
     azureStorageName: aiDependencies.outputs.azureStorageName
@@ -311,7 +339,7 @@ module storageAccountRoleAssignment 'modules-network-secured/azure-storage-accou
 
 // The Comos DB Operator role must be assigned before the caphost is created
 module cosmosAccountRoleAssignments 'modules-network-secured/cosmosdb-account-role-assignment.bicep' = {
-  name: 'cosmos-account-ra-${projectName}-${uniqueSuffix}-deployment'
+  name: 'cosmos-account-ra-${uniqueSuffix}-deployment'
   scope: resourceGroup(cosmosDBSubscriptionId, cosmosDBResourceGroupName)
   params: {
     cosmosDBName: aiDependencies.outputs.cosmosDBName
@@ -325,7 +353,7 @@ module cosmosAccountRoleAssignments 'modules-network-secured/cosmosdb-account-ro
 
 // This role can be assigned before or after the caphost is created
 module aiSearchRoleAssignments 'modules-network-secured/ai-search-role-assignments.bicep' = {
-  name: 'ai-search-ra-${projectName}-${uniqueSuffix}-deployment'
+  name: 'ai-search-ra-${uniqueSuffix}-deployment'
   scope: resourceGroup(aiSearchServiceSubscriptionId, aiSearchServiceResourceGroupName)
   params: {
     aiSearchName: aiDependencies.outputs.aiSearchName
@@ -361,7 +389,7 @@ module addProjectCapabilityHost 'modules-network-secured/add-project-capability-
 
 // The Storage Blob Data Owner role must be assigned after the caphost is created
 module storageContainersRoleAssignment 'modules-network-secured/blob-storage-container-role-assignments.bicep' = {
-  name: 'storage-containers-${uniqueSuffix}-deployment'
+  name: 'storage-containers-ra-${uniqueSuffix}-deployment'
   scope: resourceGroup(azureStorageSubscriptionId, azureStorageResourceGroupName)
   params: {
     aiProjectPrincipalId: aiProject.outputs.projectPrincipalId
@@ -375,7 +403,7 @@ module storageContainersRoleAssignment 'modules-network-secured/blob-storage-con
 
 // The Cosmos Built-In Data Contributor role must be assigned after the caphost is created
 module cosmosContainerRoleAssignments 'modules-network-secured/cosmos-container-role-assignments.bicep' = {
-  name: 'cosmos-ra-${uniqueSuffix}-deployment'
+  name: 'cosmos-container-ra-${uniqueSuffix}-deployment'
   scope: resourceGroup(cosmosDBSubscriptionId, cosmosDBResourceGroupName)
   params: {
     cosmosAccountName: aiDependencies.outputs.cosmosDBName

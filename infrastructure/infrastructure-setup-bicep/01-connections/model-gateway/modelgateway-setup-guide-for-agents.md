@@ -1,5 +1,10 @@
 # ModelGateway Setup Guide for Foundry Agents
 
+> **⚠️ IMPORTANT: Test Your Configuration First**  
+> **Before creating your ModelGateway connection in Azure AI Foundry, [jump to the validation section](#-connection-validation) to test your configuration, it ensures that it works with the Agents SDK.**
+> 
+> **🆘 Need Help?** If you encounter issues, check the [Troubleshooting Guide](./troubleshooting-guide.md) for solutions and use the validation script mentioned below.
+
 > **🎯 Step-by-Step Configuration**  
 > This guide shows you how to configure your self-hosted or third-party gateway to make it ready for use by Foundry Agents as a ModelGateway connection.
 
@@ -140,6 +145,7 @@ You need to choose how Foundry Agents will discover available models through you
 - How to set model.format field
 1. Use `OpenAI` if you are using an OpenAI model (hosted anywhere OpenAI, AzureOpenAI, Foundry or any other host provider), 
 2. Use `OpenAI` for Gemini models if you are using openai chat completions supported gemini endpoint.
+3. Use `OpenAI` if your Gateway's chat completion endpoint is fully compatible with OpenAI contract (supports tools, tool_choice, reasoning_effort, response_format etc.).
 3. Use `Anthropic` if you are using an Anthropic model's /message API, use `OpenAI` if you are using Anthropic's /chat/completions API.
 4. Use `NonOpenAI` for everything else. 
 
@@ -356,7 +362,48 @@ Configure how Foundry Agents will authenticate with your gateway:
 
 ---
 
-## 🚀 Sample curl Commands for Verifying your conenction setup based on the parameters
+## ✅ Connection Validation
+
+Before creating your ModelGateway connection in Azure AI Foundry, follow these steps to validate your configuration:
+
+### 1. **Choose your parameter file** based on your gateway type:
+   - `samples/parameters-static.json` - For gateways with predefined static models
+   - `samples/parameters-dynamic.json` - For gateways with dynamic model discovery
+   - `samples/parameters-oauth2.json` - For OAuth2 authentication (requires `clientId`, `tokenUrl`, `scopes`)
+   - `samples/parameters-custom-auth-config.json` - For custom authentication headers
+   - `samples/parameters-foundryopenai.json` - For Azure OpenAI Foundry connections
+
+### 2. **Update the parameter file** with your actual configuration values
+   Use the rest of this guide to decide the correct parameter values for your gateway setup.
+
+### 3. **Test your configuration** using the validation script:
+
+First, install the required Python package:
+```bash
+pip install requests
+```
+
+Then run the validation script:
+```bash
+# For API Key authentication:
+python3 test_model_gateway_connection.py --params samples/YOUR_CHOSEN_FILE.json --api-key YOUR_API_KEY --deployment-name YOUR_DEPLOYMENT
+
+# For OAuth2 authentication:
+python3 test_model_gateway_connection.py --params samples/parameters-oauth2.json --client-secret YOUR_CLIENT_SECRET --deployment-name YOUR_DEPLOYMENT
+```
+
+This validation script tests:
+- ✅ Parameter validation and configuration parsing
+- ✅ Model discovery (static or dynamic)
+- ✅ Authentication (API Key, OAuth2, custom authConfig)
+- ✅ Chat completions endpoint functionality
+- ✅ Provider format compatibility (OpenAI vs Azure OpenAI)
+
+**Testing saves time and prevents deployment issues! This validation ensures your connection will work correctly when used with the Agents SDK.**
+
+---
+
+## 🚀 Sample curl Commands for Verifying your connection setup based on the parameters
 
 ### Generic Curl Template with API Versions
 
